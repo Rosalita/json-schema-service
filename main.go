@@ -3,25 +3,32 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/gorilla/mux"
 )
 
-
-func main(){
-	http.HandleFunc("/upload", uploadHandler)
-	http.HandleFunc("/download", downloadHandler)
-	http.HandleFunc("/validation", validationHandler)
-
-    http.ListenAndServe(":8080", nil)
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
 }
 
-func uploadHandler(w http.ResponseWriter, r *http.Request){
-    fmt.Fprintf(w, "upload handler")
+func setupDatabase() (string, error) {
+	return "db", nil
 }
 
-func downloadHandler(w http.ResponseWriter, r *http.Request){
-    fmt.Fprintf(w, "download handler")
-}
+func run() error {
+	r := mux.NewRouter()
 
-func validationHandler(w http.ResponseWriter, r *http.Request){
-    fmt.Fprintf(w, "validation handler")
+	db, err := setupDatabase()
+	if err != nil {
+		return fmt.Errorf("setup database error: %w", err)
+	}
+
+	server := newServer(db, r)
+
+	http.ListenAndServe(":8080", server)
+	return nil
 }
