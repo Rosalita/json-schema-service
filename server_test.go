@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_ServeHTTP(t *testing.T) {
@@ -26,7 +26,7 @@ func Test_ServeHTTP(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			db := "todo"
+			db := newMockDbClient()
 			router := mux.NewRouter()
 			server := newServer(db, router)
 

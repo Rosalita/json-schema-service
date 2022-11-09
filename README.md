@@ -5,8 +5,8 @@ A service for validating JSON schemas
 I chose to containerise this service with Docker so to that it can run in any environment.
 This also means that this project could be deployed to Kubernetes.
 
-I also chose to write tests from the beginning of the project. Having previously worked in 
-software testing I believe quality must be built into a project (not added at the end).
+I also chose to write tests from the beginning of the project. Having previously worked in
+Software Testing I believe quality must be built into a project (not added at the end).
 Write tests at the same time as the code, ensures that code is written for testability.
 
 ## Main
@@ -49,6 +49,29 @@ a closure pattern. Each anonymous handler function has its request and response 
 declared inside. This was done to not only make the types easy to find, but also to 
 reduce namespace pollution as request and reponse types no longer need unique names.
 
+## Testing
+Tests only have two ways to handle dependencies, they can either use a real
+dependency, or they can use a mocked dependency. The trade offs are that using
+a real dependency has a slower feedback loop, but guarantees a realistic result.
+While using a mock has a fast feedback loop, but only generates the result it has
+been coded to generate, e.g. unrealistic results are possible.
+
+Different layers of testing require different characteristics. At the unit test level,
+tests need to provide very fast feedback, as they run all the time on every code commit.
+At the integration test level, realistic results are more important than feedback speed.
+Tests at this level have a slower feedback loop, along with a higher cost to run and
+maintain.
+
+For the purposes of this project, as it has to be written within time constraints, 
+I have omitted integration tests. However an example of how I have previously written 
+API level integration tests with Go can be found [here](https://github.com/mwinteringham/api-framework/tree/master/go). This is a friend's repo that I contributed to a couple of years ago.
+
+### Mocks
+The unit tests I have written use mock dependencies. As the project only has one dependency
+(a database), I have written these mocks by hand in `mocks.go`. For production code,
+I would want to use interfaces to auto-generate mocks using a package like [gomock](https://github.com/golang/mock). Then if the interfaces ever changed, `go generate` would easily be able to
+automatically regenerate the new mocks.
+
 # Running this project
 To build and run this project, you will need `docker` and `make`
 
@@ -65,3 +88,4 @@ To build and run this project, you will need `docker` and `make`
 
 While the service is running, the command `docker ps` should show the following active containers.
 * json-schema-service
+* mongo-db

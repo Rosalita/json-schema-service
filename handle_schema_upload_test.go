@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,12 +13,14 @@ import (
 
 func Test_handleSchemaUpload(t *testing.T) {
 	tests := map[string]struct {
-		input          string
+		schemaID       string
+		body           string
 		expectedResult string
 		expectedCode   int
 	}{
 		"Can upload a valid schema": {
-			input: `
+			schemaID: "config-schema",
+			body: `
 			{
 				"$schema": "http://json-schema.org/draft-04/schema#",
 				"type": "object",
@@ -48,18 +51,26 @@ func Test_handleSchemaUpload(t *testing.T) {
 				},
 				"required": ["source", "destination"]
 			  }`,
-			expectedResult: `upload handler`,
-			expectedCode:   200,
+			expectedResult: `{"action":"uploadSchema","id":"config-schema","status":"success"}`,
+			expectedCode:   201,
 		},
 	}
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			db := "todo"
+			db := newMockDbClient()
 			router := mux.NewRouter()
+
 			server := newServer(db, router)
 
-			r, _ := http.NewRequest("POST", "/schema/123", bytes.NewBuffer([]byte(test.input)))
+			r, _ := http.NewRequest("POST", fmt.Sprintf("/schema/%s", test.schemaID), bytes.NewBuffer([]byte(test.body)))
+
+			// As unit testing individual handler directly, without calling .ServeHTTP on the router,
+			// these tests will need to manually set URL variables on the router as part of test setup.
+			r = mux.SetURLVars(r, map[string]string{
+				"id": test.schemaID,
+			})
+
 			w := httptest.NewRecorder()
 
 			handlerUnderTest := server.handleSchemaUpload()
@@ -71,7 +82,7 @@ func Test_handleSchemaUpload(t *testing.T) {
 			}
 
 			assert.Equal(t, test.expectedCode, w.Code)
-			assert.Equal(t, test.expectedResult, respBody.String())
+			assert.JSONEq(t, test.expectedResult, respBody.String())
 		})
 	}
 }

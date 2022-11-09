@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
@@ -15,17 +19,31 @@ func main() {
 	}
 }
 
-func setupDatabase() (string, error) {
-	return "db", nil
+func setupDatabase() (*mongo.Client, func(), error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	cleanup := func() {
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}
+	return client, cleanup, nil
 }
 
 func run() error {
 	r := mux.NewRouter()
 
-	db, err := setupDatabase()
+	db, dbCleanup, err := setupDatabase()
 	if err != nil {
 		return fmt.Errorf("setup database error: %w", err)
 	}
+	defer dbCleanup()
 
 	server := newServer(db, r)
 

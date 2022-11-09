@@ -34,7 +34,7 @@ func Test_handleSchemaValidate(t *testing.T) {
 
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			db := "todo"
+			db := newMockDbClient()
 			router := mux.NewRouter()
 			server := newServer(db, router)
 
