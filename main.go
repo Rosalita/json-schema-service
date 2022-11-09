@@ -19,11 +19,11 @@ func main() {
 	}
 }
 
-func setupDatabase() (*mongo.Client, func(), error) {
+func setupDatabase() (ClientIface, func(), error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://mongo:27017"))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -33,7 +33,8 @@ func setupDatabase() (*mongo.Client, func(), error) {
 			panic(err)
 		}
 	}
-	return client, cleanup, nil
+
+	return &mongoClient{cl: client}, cleanup, nil
 }
 
 func run() error {

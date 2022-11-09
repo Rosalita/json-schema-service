@@ -2,34 +2,34 @@ package main
 
 import (
 	"context"
-
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func newMockDbClient() mockDbClient {
-	return mockDbClient{}
-}
+// mockClient is a mock implementation of a mongo client
+// which satisfies the same interface as the mongo client wrapper.
+// mockClient is used in unit tests to avoid dependency on a
+// real mongo database.
+type mockClient struct{}
 
-type mockDbClient struct{}
-
-func (m mockDbClient) Connect(ctx context.Context) error {
+func (mc mockClient) Connect(ctx context.Context) error {
 	return nil
 }
-
-func (m mockDbClient) Disconnect(ctx context.Context) error {
-	return nil
+func (mc mockClient) Database(dbName string) DatabaseIface {
+	return mockDatabase{}
 }
 
-func (m mockDbClient) Database(name string, opts ...*options.DatabaseOptions) *mongo.Database {
-	return nil
+type mockDatabase struct{}
+
+func (md mockDatabase) Collection(colName string) CollectionIface {
+	return mockCollection{}
 }
 
-// dbClient is an interface that both a real mongoDb client and
-// a mock client can pass through. This interface allows
-// dependencies to be mocked in tests.
-type dbClient interface {
-	Connect(ctx context.Context) error
-	Disconnect(ctx context.Context) error
-	Database(name string, opts ...*options.DatabaseOptions) *mongo.Database
+type mockCollection struct{}
+
+func (mc mockCollection) InsertOne(ctx context.Context, document interface{}) (interface{}, error) {
+	return nil, nil
+}
+
+// newMockDbClient is a helper function that returns a new mock db client
+func newMockDbClient() mockClient {
+	return mockClient{}
 }

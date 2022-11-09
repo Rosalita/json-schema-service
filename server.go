@@ -8,7 +8,7 @@ import (
 
 // server holds all server dependencies.
 type server struct {
-	db     dbClient
+	db     ClientIface
 	router *mux.Router
 }
 
@@ -30,7 +30,7 @@ func (s *server) respond(w http.ResponseWriter, r *http.Request, data interface{
 }
 
 // newServer is a constructor for a server that sets up routes.
-func newServer(db dbClient, router *mux.Router) *server {
+func newServer(db ClientIface, router *mux.Router) *server {
 	s := &server{
 		db:     db,
 		router: router,

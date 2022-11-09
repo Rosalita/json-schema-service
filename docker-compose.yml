@@ -6,8 +6,6 @@ services:
       - "8080:8080"
     container_name: json-schema-service
   mongo:
-    environment:
-      MONGODB_HOST: localhost:27017
     image: mongo:6.0.2
     ports:
       - 27017:27017

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -14,6 +16,11 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 		Action string `json:"action"`
 		ID     string `json:"id"`
 		Status string `json:"status"`
+	}
+
+	type schemaData struct {
+		ID     string `bson:"schema_id"` // named to differentiate from document id
+		Schema string `bson:"schema"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +34,25 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 		}
 
 		schema := string(body)
-		log.Println(schema)
+
+		database := s.db.Database("validation_service")
+		collection := database.Collection("schemas")
+
+		document := schemaData{
+			ID:     schemaID,
+			Schema: schema,
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		_, err = collection.InsertOne(ctx, document)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "database error", http.StatusInternalServerError)
+			return
+		}
+
+		log.Println("Inserted a single document")
 
 		resp := response{
 			Action: "uploadSchema",
@@ -39,4 +64,10 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 			http.Error(w, "internal error", http.StatusInternalServerError)
 		}
 	}
+}
+
+// getDbCollection is a helper function that fetches the mongo collection to work with.
+// As MongoDb doesn't provide
+func getDbCollection() {
+
 }
