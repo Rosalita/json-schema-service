@@ -18,11 +18,6 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 		Status string `json:"status"`
 	}
 
-	type schemaData struct {
-		ID     string `bson:"schema_id"` // named to differentiate from document id
-		Schema string `bson:"schema"`
-	}
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		schemaID := vars["id"]
@@ -47,7 +42,6 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 
 		_, err = collection.InsertOne(ctx, document)
 		if err != nil {
-			log.Println(err)
 			http.Error(w, "database error", http.StatusInternalServerError)
 			return
 		}
@@ -64,10 +58,4 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 			http.Error(w, "internal error", http.StatusInternalServerError)
 		}
 	}
-}
-
-// getDbCollection is a helper function that fetches the mongo collection to work with.
-// As MongoDb doesn't provide
-func getDbCollection() {
-
 }

@@ -45,6 +45,20 @@ func (mc *mongoCollection) InsertOne(ctx context.Context, document interface{}) 
 	return id.InsertedID, err
 }
 
+func (mc *mongoCollection) FindOne(ctx context.Context, document interface{}) SingleResultIface {
+	result := mc.coll.FindOne(ctx, document)
+	return mongoSingleResult{res: result}
+}
+
+// mongoSingleResult is a wrapper for a *mongoSingleResult
+type mongoSingleResult struct {
+	res *mongo.SingleResult
+}
+
+func (ms mongoSingleResult) Decode(v interface{}) error {
+	return ms.res.Decode(v)
+}
+
 // ClientIface describes methods on a mongo client
 type ClientIface interface {
 	Database(string) DatabaseIface
@@ -58,11 +72,17 @@ type DatabaseIface interface {
 
 // CollectionIface describes methods on a mongo collection
 type CollectionIface interface {
-	//	FindOne(context.Context, interface{}) SingleResultIface
+	FindOne(context.Context, interface{}) SingleResultIface
 	InsertOne(context.Context, interface{}) (interface{}, error)
 }
 
 // SingleResultIface describes methods on a mongo single result
 type SingleResultIface interface {
 	Decode(v interface{}) error
+}
+
+// schemaData is used to marshal to and fron bson.
+type schemaData struct {
+	ID     string `bson:"schema_id"`
+	Schema string `bson:"schema"`
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"go.mongodb.org/mongo-driver/bson"
+	"reflect"
 )
 
 // mockClient is a mock implementation of a mongo client
@@ -27,6 +29,35 @@ type mockCollection struct{}
 
 func (mc mockCollection) InsertOne(ctx context.Context, document interface{}) (interface{}, error) {
 	return nil, nil
+}
+
+func (mc mockCollection) FindOne(ctx context.Context, v interface{}) SingleResultIface {
+	if val, ok := v.(bson.D); ok {
+		m := val.Map()
+		id := m["schema_id"]
+		if id == "config-schema" {
+			return mockSingleResult{}
+		}
+	}
+	return mockSingleResultNotFound{}
+}
+
+type mockSingleResult struct{}
+
+func (ms mockSingleResult) Decode(v interface{}) error {
+	mockResult := schemaData{Schema: `{"mock":"schema"}`}
+	mockVal := reflect.ValueOf(mockResult)
+	reflect.ValueOf(v).Elem().Set(mockVal)
+	return nil
+}
+
+type mockSingleResultNotFound struct{}
+
+func (ms mockSingleResultNotFound) Decode(v interface{}) error {
+	mockResult := schemaData{Schema: ""}
+	mockVal := reflect.ValueOf(mockResult)
+	reflect.ValueOf(v).Elem().Set(mockVal)
+	return nil
 }
 
 // newMockDbClient is a helper function that returns a new mock db client

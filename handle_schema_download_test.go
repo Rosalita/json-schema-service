@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,12 +13,19 @@ import (
 
 func Test_handleSchemaDownload(t *testing.T) {
 	tests := map[string]struct {
+		schemaID       string
 		expectedResult string
 		expectedCode   int
 	}{
 		"can download a valid schema": {
-			expectedResult: `download handler`,
+			schemaID:       "config-schema",
+			expectedResult: `{"mock":"schema"}`,
 			expectedCode:   200,
+		},
+		"can handle schema not found error": {
+			schemaID:       "not-found",
+			expectedResult: "not found\n",
+			expectedCode:   404,
 		},
 	}
 
@@ -27,8 +35,14 @@ func Test_handleSchemaDownload(t *testing.T) {
 			router := mux.NewRouter()
 			server := newServer(db, router)
 
-			r, _ := http.NewRequest("GET", "/schema/123", nil)
+			r, _ := http.NewRequest("GET", fmt.Sprintf("/schema/%s", test.schemaID), nil)
 			w := httptest.NewRecorder()
+
+			// As unit testing individual handler directly, without calling .ServeHTTP on the router,
+			// these tests will need to manually set URL variables on the router as part of test setup.
+			r = mux.SetURLVars(r, map[string]string{
+				"id": test.schemaID,
+			})
 
 			handlerUnderTest := server.handleSchemaDownload()
 			handlerUnderTest(w, r)

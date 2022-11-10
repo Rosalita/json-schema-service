@@ -72,6 +72,11 @@ The unit tests I have written use mock dependencies. As the project only has one
 I would want to use interfaces to auto-generate mocks using a package like [gomock](https://github.com/golang/mock). Then if the interfaces ever changed, `go generate` would easily be able to
 automatically regenerate the new mocks.
 
+As the MongoDb driver does not provide exposed interfaces, I had to build a wrapper around the
+MongoDb driver that returned interfaces. This wrapper is in `mongo.go` along with the
+interfaces. A wrapped real MongoDb client and a mock client both satisfy the same interfaces.
+
+
 # Running this project
 To build and run this project, you will need `docker` and `make`
 

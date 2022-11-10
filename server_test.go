@@ -15,7 +15,7 @@ func Test_ServeHTTP(t *testing.T) {
 		expectedCode int
 	}{
 		"can serve a known route": {
-			route:        `/schema/123`,
+			route:        `/schema/config-schema`,
 			expectedCode: 200,
 		},
 		"can handle an unknown route": {
