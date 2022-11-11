@@ -1,5 +1,5 @@
 # json-schema-service
-A service for validating JSON schemas
+A service for validating JSON schemas.
 
 # Design Decisions
 I chose to containerise this service with Docker so to that it can run in any environment.
@@ -95,7 +95,8 @@ To build and run this project, you will need `docker` and `make`
     * Windows: `choco install make`
 
 ## Building and starting the service
-1. Build the docker image from the dockerfile with the command `make build`.
+1. `git clone` this repository to your local machine and `cd` to the root directory.
+2. Build the docker image from the dockerfile with the command `make build`.
 2. Run docker-compose to start the app and dependencies with the command `make start`.
 3. The service can be stopped using the command `make stop`.
 
