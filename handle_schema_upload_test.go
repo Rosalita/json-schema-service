@@ -54,6 +54,12 @@ func Test_handleSchemaUpload(t *testing.T) {
 			expectedResult: `{"action":"uploadSchema","id":"config-schema","status":"success"}`,
 			expectedCode:   201,
 		},
+		"Can handle invalid json schema": {
+			schemaID:       "config-schema",
+			payload:        `{`,
+			expectedResult: `{"action":"uploadSchema","id":"config-schema","message":"Invalid JSON","status":"error"}`,
+			expectedCode:   400,
+		},
 	}
 
 	for testName, test := range tests {

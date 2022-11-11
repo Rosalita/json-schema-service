@@ -1,0 +1,85 @@
+{
+	"info": {
+		"_postman_id": "0959e9f3-3b74-4fe3-8cde-010e6d943846",
+		"name": "json-schema-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13246133"
+	},
+	"item": [
+		{
+			"name": "schema upload",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n  \"type\": \"object\",\r\n  \"properties\": {\r\n    \"source\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"destination\": {\r\n      \"type\": \"string\"\r\n    },\r\n    \"timeout\": {\r\n      \"type\": \"integer\",\r\n      \"minimum\": 0,\r\n      \"maximum\": 32767\r\n    },\r\n    \"chunks\": {\r\n      \"type\": \"object\",\r\n      \"properties\": {\r\n        \"size\": {\r\n          \"type\": \"integer\"\r\n        },\r\n        \"number\": {\r\n          \"type\": \"integer\"\r\n        }\r\n      },\r\n      \"required\": [\"size\"]\r\n    }\r\n  },\r\n  \"required\": [\"source\", \"destination\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/schema/{{SCHEMAID}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"schema",
+						"{{SCHEMAID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "schema download",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/schema/{{SCHEMAID}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"schema",
+						"{{SCHEMAID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "schema validate",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"source\": \"/home/alice/image.iso\",\r\n  \"destination\": \"/mnt/storage\",\r\n  \"timeout\": null,\r\n  \"chunks\": {\r\n    \"size\": 1024,\r\n    \"number\": null\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/validate/{{SCHEMAID}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"validate",
+						"{{SCHEMAID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

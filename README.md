@@ -7,7 +7,7 @@ This also means that this project could be deployed to Kubernetes.
 
 I also chose to write tests from the beginning of the project. Having previously worked in
 Software Testing I believe quality must be built into a project (not added at the end).
-Write tests at the same time as the code, ensures that code is written for testability.
+Writing tests at the same time as the code, ensures that code is written for testability.
 
 ## Main
 In `main.go`, `func main()` was written to have a tiny abstraction. The `main` function
@@ -64,17 +64,26 @@ maintain.
 
 For the purposes of this project, as it has to be written within time constraints, 
 I have omitted integration tests. However an example of how I have previously written 
-API level integration tests with Go can be found [here](https://github.com/mwinteringham/api-framework/tree/master/go). This is a friend's repo that I contributed to a couple of years ago.
+API level integration tests with Go can be found [here](https://github.com/mwinteringham/api-framework/tree/master/go).
+This is a friend's repo that I contributed to a couple of years ago.
 
 ### Mocks
 The unit tests I have written use mock dependencies. As the project only has one dependency
 (a database), I have written these mocks by hand in `mocks.go`. For production code,
-I would want to use interfaces to auto-generate mocks using a package like [gomock](https://github.com/golang/mock). Then if the interfaces ever changed, `go generate` would easily be able to
-automatically regenerate the new mocks.
+I would want to use interfaces to auto-generate mocks using a package like [gomock](https://github.com/golang/mock).
+Then if the interfaces ever changed, `go generate` would easily be able to automatically regenerate the new mocks.
 
 As the MongoDb driver does not provide exposed interfaces, I had to build a wrapper around the
 MongoDb driver that returned interfaces. This wrapper is in `mongo.go` along with the
 interfaces. A wrapped real MongoDb client and a mock client both satisfy the same interfaces.
+
+### Postman
+To ensure that the requirement to handle exceptional cases was met, I carried out
+exploratory testing of my API using [Postman](https://www.postman.com/).
+I have included my Postman collection and environment files in the `Postman` folder.
+Keeping a Postman collection (or something similar) in a project and updating it
+as a project grows is a good idea as it serves as documentation of the existing API.
+This can be incredibly useful for other team members (e.g. testers, support team, docs team etc.)
 
 # Running this project
 To build and run this project, you will need `docker` and `make`

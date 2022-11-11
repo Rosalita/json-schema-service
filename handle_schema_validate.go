@@ -100,6 +100,7 @@ func (s *server) handleSchemaValidate() http.HandlerFunc {
 	}
 }
 
+// removeNullValues is a helper function that removes null values from a map
 func removeNullValues(m map[string]interface{}) {
 	val := reflect.ValueOf(m)
 	for _, e := range val.MapKeys() {

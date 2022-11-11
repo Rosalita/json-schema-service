@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"time"
@@ -12,9 +13,10 @@ import (
 func (s *server) handleSchemaUpload() http.HandlerFunc {
 
 	type response struct {
-		Action string `json:"action"`
-		ID     string `json:"id"`
-		Status string `json:"status"`
+		Action  string `json:"action"`
+		ID      string `json:"id"`
+		Status  string `json:"status"`
+		Message string `json:"message,omitempty"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -27,16 +29,21 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 			return
 		}
 
-		// To do check schema is valid json
-		// if it's not return
-		// {
-		// 	"action": "uploadSchema",
-		// 	"id": "config-schema",
-		// 	"status": "error",
-		// 	"message": "Invalid JSON"
-		// }
-
 		schema := string(body)
+		if !isJSON(schema) {
+			resp := response{
+				Action:  "uploadSchema",
+				ID:      schemaID,
+				Status:  "error",
+				Message: "Invalid JSON",
+			}
+
+			if err := s.respond(w, r, resp, http.StatusBadRequest); err != nil {
+				http.Error(w, "internal error", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
 
 		database := s.db.Database("validation_service")
 		collection := database.Collection("schemas")
@@ -64,4 +71,10 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 			http.Error(w, "internal error", http.StatusInternalServerError)
 		}
 	}
+}
+
+// isJSON is a helper function that returns true if a string is valid JSON.
+func isJSON(str string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(str), &js) == nil
 }
