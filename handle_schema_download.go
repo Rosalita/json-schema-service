@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func (s *server) handleSchemaDownload() http.HandlerFunc {
@@ -28,12 +28,13 @@ func (s *server) handleSchemaDownload() http.HandlerFunc {
 		filter := bson.D{{Key: "schema_id", Value: schemaID}}
 
 		err := collection.FindOne(ctx, filter).Decode(&result)
-		if err != nil {
-			log.Println(err)
+		if err == mongo.ErrNoDocuments {
+			http.Error(w, "schema not found", http.StatusNotFound)
+			return
 		}
-
-		if result.Schema == "" {
-			http.Error(w, "not found", http.StatusNotFound)
+		if err != nil {
+			http.Error(w, "database error", http.StatusInternalServerError)
+			return
 		}
 
 		fmt.Fprintf(w, result.Schema)

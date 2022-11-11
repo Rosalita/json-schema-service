@@ -14,13 +14,13 @@ import (
 func Test_handleSchemaUpload(t *testing.T) {
 	tests := map[string]struct {
 		schemaID       string
-		body           string
+		payload        string
 		expectedResult string
 		expectedCode   int
 	}{
 		"Can upload a valid schema": {
 			schemaID: "config-schema",
-			body: `
+			payload: `
 			{
 				"$schema": "http://json-schema.org/draft-04/schema#",
 				"type": "object",
@@ -63,7 +63,7 @@ func Test_handleSchemaUpload(t *testing.T) {
 
 			server := newServer(db, router)
 
-			r, _ := http.NewRequest("POST", fmt.Sprintf("/schema/%s", test.schemaID), bytes.NewBuffer([]byte(test.body)))
+			r, _ := http.NewRequest("POST", fmt.Sprintf("/schema/%s", test.schemaID), bytes.NewBuffer([]byte(test.payload)))
 
 			// As unit testing individual handler directly, without calling .ServeHTTP on the router,
 			// these tests will need to manually set URL variables on the router as part of test setup.

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -28,6 +27,15 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 			return
 		}
 
+		// To do check schema is valid json
+		// if it's not return
+		// {
+		// 	"action": "uploadSchema",
+		// 	"id": "config-schema",
+		// 	"status": "error",
+		// 	"message": "Invalid JSON"
+		// }
+
 		schema := string(body)
 
 		database := s.db.Database("validation_service")
@@ -45,8 +53,6 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 			http.Error(w, "database error", http.StatusInternalServerError)
 			return
 		}
-
-		log.Println("Inserted a single document")
 
 		resp := response{
 			Action: "uploadSchema",

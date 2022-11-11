@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,12 +13,14 @@ import (
 
 func Test_handleSchemaValidate(t *testing.T) {
 	tests := map[string]struct {
-		input          string
+		schemaID       string
+		payload        string
 		expectedResult string
 		expectedCode   int
 	}{
-		"can upload": {
-			input: `
+		"can validate valid data against a schema": {
+			schemaID: "config-schema",
+			payload: `
 			{
 				"source": "/home/alice/image.iso",
 				"destination": "/mnt/storage",
@@ -27,7 +30,7 @@ func Test_handleSchemaValidate(t *testing.T) {
 				  "number": null
 				}
 			  }`,
-			expectedResult: `validate handler`,
+			expectedResult: `{"action":"validateDocument","id":"config-schema","status":"success"}`,
 			expectedCode:   200,
 		},
 	}
@@ -38,8 +41,14 @@ func Test_handleSchemaValidate(t *testing.T) {
 			router := mux.NewRouter()
 			server := newServer(db, router)
 
-			r, _ := http.NewRequest("POST", "/validate/123", bytes.NewBuffer([]byte(test.input)))
+			r, _ := http.NewRequest("POST", fmt.Sprintf("/validate/%s", test.schemaID), bytes.NewBuffer([]byte(test.payload)))
 			w := httptest.NewRecorder()
+
+			// As unit testing individual handler directly, without calling .ServeHTTP on the router,
+			// these tests will need to manually set URL variables on the router as part of test setup.
+			r = mux.SetURLVars(r, map[string]string{
+				"id": test.schemaID,
+			})
 
 			handlerUnderTest := server.handleSchemaValidate()
 			handlerUnderTest(w, r)
@@ -50,7 +59,7 @@ func Test_handleSchemaValidate(t *testing.T) {
 			}
 
 			assert.Equal(t, test.expectedCode, w.Code)
-			assert.Equal(t, test.expectedResult, respBody.String())
+			assert.JSONEq(t, test.expectedResult, respBody.String())
 		})
 	}
 }

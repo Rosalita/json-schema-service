@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"reflect"
 )
 
@@ -54,10 +55,7 @@ func (ms mockSingleResult) Decode(v interface{}) error {
 type mockSingleResultNotFound struct{}
 
 func (ms mockSingleResultNotFound) Decode(v interface{}) error {
-	mockResult := schemaData{Schema: ""}
-	mockVal := reflect.ValueOf(mockResult)
-	reflect.ValueOf(v).Elem().Set(mockVal)
-	return nil
+	return mongo.ErrNoDocuments
 }
 
 // newMockDbClient is a helper function that returns a new mock db client

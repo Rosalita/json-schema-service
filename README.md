@@ -76,7 +76,6 @@ As the MongoDb driver does not provide exposed interfaces, I had to build a wrap
 MongoDb driver that returned interfaces. This wrapper is in `mongo.go` along with the
 interfaces. A wrapped real MongoDb client and a mock client both satisfy the same interfaces.
 
-
 # Running this project
 To build and run this project, you will need `docker` and `make`
 

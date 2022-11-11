@@ -24,7 +24,7 @@ func Test_handleSchemaDownload(t *testing.T) {
 		},
 		"can handle schema not found error": {
 			schemaID:       "not-found",
-			expectedResult: "not found\n",
+			expectedResult: "schema not found\n",
 			expectedCode:   404,
 		},
 	}
