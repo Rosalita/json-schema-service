@@ -102,3 +102,11 @@ To build and run this project, you will need `docker` and `make`
 While the service is running, the command `docker ps` should show the following active containers.
 * json-schema-service
 * mongo-db
+
+## Using the service
+This service runs on `localhost` port `8080`.
+
+A [Postman](https://www.postman.com/) collection has been provided in `postman` to assist with 
+making requests to the service.
+
+alternatively `curl` can be used e.g. `curl http://localhost:8080/schema/config-schema -X GET`

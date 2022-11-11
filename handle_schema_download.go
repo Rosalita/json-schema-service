@@ -17,8 +17,7 @@ func (s *server) handleSchemaDownload() http.HandlerFunc {
 		vars := mux.Vars(r)
 		schemaID := vars["id"]
 
-		database := s.db.Database("validation_service")
-		collection := database.Collection("schemas")
+		collection := s.db.Database(validationDbName).Collection(schemaCollection)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -29,11 +28,11 @@ func (s *server) handleSchemaDownload() http.HandlerFunc {
 
 		err := collection.FindOne(ctx, filter).Decode(&result)
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "schema not found", http.StatusNotFound)
+			http.Error(w, errMsgSchemaNotFound, http.StatusNotFound)
 			return
 		}
 		if err != nil {
-			http.Error(w, "database error", http.StatusInternalServerError)
+			http.Error(w, errMsgDatabaseError, http.StatusInternalServerError)
 			return
 		}
 

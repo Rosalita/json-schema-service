@@ -25,28 +25,27 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "error reading body", http.StatusBadRequest)
+			http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 			return
 		}
 
 		schema := string(body)
 		if !isJSON(schema) {
 			resp := response{
-				Action:  "uploadSchema",
+				Action:  actionUpload,
 				ID:      schemaID,
-				Status:  "error",
-				Message: "Invalid JSON",
+				Status:  statusError,
+				Message: msgInvalidJson,
 			}
 
 			if err := s.respond(w, r, resp, http.StatusBadRequest); err != nil {
-				http.Error(w, "internal error", http.StatusInternalServerError)
+				http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 				return
 			}
 			return
 		}
 
-		database := s.db.Database("validation_service")
-		collection := database.Collection("schemas")
+		collection := s.db.Database(validationDbName).Collection(schemaCollection)
 
 		document := schemaData{
 			ID:     schemaID,
@@ -57,18 +56,18 @@ func (s *server) handleSchemaUpload() http.HandlerFunc {
 
 		_, err = collection.InsertOne(ctx, document)
 		if err != nil {
-			http.Error(w, "database error", http.StatusInternalServerError)
+			http.Error(w, errMsgDatabaseError, http.StatusInternalServerError)
 			return
 		}
 
 		resp := response{
-			Action: "uploadSchema",
+			Action: actionUpload,
 			ID:     schemaID,
-			Status: "success",
+			Status: statusSuccess,
 		}
 
 		if err := s.respond(w, r, resp, http.StatusCreated); err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 		}
 	}
 }

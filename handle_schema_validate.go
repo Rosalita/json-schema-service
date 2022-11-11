@@ -35,12 +35,11 @@ func (s *server) handleSchemaValidate() http.HandlerFunc {
 
 		payload, err := json.Marshal(requestData)
 		if err != nil {
-			http.Error(w, "json marshal error", http.StatusInternalServerError)
+			http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 			return
 		}
 
-		database := s.db.Database("validation_service")
-		collection := database.Collection("schemas")
+		collection := s.db.Database(validationDbName).Collection(schemaCollection)
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -51,23 +50,23 @@ func (s *server) handleSchemaValidate() http.HandlerFunc {
 
 		err = collection.FindOne(ctx, filter).Decode(&result)
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "schema not found", http.StatusNotFound)
+			http.Error(w, errMsgSchemaNotFound, http.StatusNotFound)
 			return
 		}
 		if err != nil {
-			http.Error(w, "database error", http.StatusInternalServerError)
+			http.Error(w, errMsgDatabaseError, http.StatusInternalServerError)
 			return
 		}
 
 		compiler := jsonschema.NewCompiler()
 		if err := compiler.AddResource(schemaID, strings.NewReader(result.Schema)); err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 			return
 		}
 
 		schema, err := compiler.Compile(schemaID)
 		if err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 			return
 		}
 
@@ -75,27 +74,27 @@ func (s *server) handleSchemaValidate() http.HandlerFunc {
 		if err = schema.Validate(reader); err != nil {
 
 			resp := response{
-				Action:  "validateDocument",
+				Action:  actionValidate,
 				ID:      schemaID,
-				Status:  "error",
+				Status:  statusError,
 				Message: err.Error(),
 			}
 
 			if err := s.respond(w, r, resp, http.StatusOK); err != nil {
-				http.Error(w, "internal error", http.StatusInternalServerError)
+				http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 				return
 			}
 			return
 		}
 
 		resp := response{
-			Action: "validateDocument",
+			Action: actionValidate,
 			ID:     schemaID,
-			Status: "success",
+			Status: statusSuccess,
 		}
 
 		if err := s.respond(w, r, resp, http.StatusOK); err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			http.Error(w, errMsgInternalError, http.StatusInternalServerError)
 		}
 	}
 }
